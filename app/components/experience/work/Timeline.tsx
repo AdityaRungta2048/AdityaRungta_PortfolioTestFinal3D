@@ -22,6 +22,7 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   }, [point.position]);
 
   const textAlign = point.position === 'left' ? 'right' : 'left';
+  const [titleHeight, setTitleHeight] = useState(0.6);
 
   const textProps: Partial<TextProps> = useMemo(() => ({
     font: "./Vercetti-Regular.woff",
@@ -37,6 +38,16 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
     maxWidth: 3,
   }), [textProps]);
 
+  // Measure the rendered title height so the subtitle always sits below it,
+  // even when a multi-word title wraps onto a second line.
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  const handleTitleSync = (troika: any) => {
+    const bounds = troika?.textRenderInfo?.blockBounds;
+    if (!bounds) return;
+    const height = bounds[3] - bounds[1];
+    setTitleHeight((prev) => (Math.abs(prev - height) > 0.01 ? height : prev));
+  };
+
   return (
     <group position={point.point} scale={isMobile ? 0.35 : 0.6}>
       <Box args={[0.2, 0.2, 0.2]} position={[0, 0, -0.1]} scale={[1 - diff, 1 - diff, 1 - diff]}>
@@ -49,10 +60,12 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
             {point.year}
           </Text>
           <group position={[0, -0.5, 0]}>
-            <Text {...titleProps} fontSize={0.6} maxWidth={3} position={[0, -diff / 2, 0]}>
+            <Text {...titleProps} anchorY="top" fontSize={0.6} maxWidth={3}
+              position={[0, -diff / 2, 0]} onSync={handleTitleSync}>
               {point.title}
             </Text>
-            <Text {...textProps} fontSize={0.2} position={[0, -0.4 - diff, 0]}>
+            <Text {...textProps} anchorY="top" fontSize={0.2}
+              position={[0, -diff / 2 - titleHeight - 0.14, 0]}>
               {point.subtitle}
             </Text>
           </group>
