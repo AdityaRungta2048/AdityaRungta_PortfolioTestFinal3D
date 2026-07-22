@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { isMobile } from "react-device-detect";
 import * as THREE from "three";
 
-import { usePortalStore } from "@stores";
+import { usePortalStore, useProjectStore } from "@stores";
 import { Project } from "@types";
 
 interface ProjectTileProps {
@@ -23,6 +23,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick, da
   const hoverAnimRef = useRef<gsap.core.Timeline | null>(null);
   const [desktopHovered, setDesktopHovered] = useState(false);
   const isProjectSectionActive = usePortalStore((state) => state.activePortalId === "projects");
+  const setActiveProject = useProjectStore((state) => state.setActiveProject);
   const hovered = isMobile ? activeId === index : desktopHovered;
   const isTop = datePosition === 'top';
 
@@ -92,6 +93,16 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick, da
     e.stopPropagation();
     if (!isMobile && isProjectSectionActive) {
       setDesktopHovered(true);
+      // Open the detail panel for this project on hover.
+      setActiveProject(index);
+    }
+  };
+
+  const handleTileClick = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    onClick();
+    if (isProjectSectionActive) {
+      setActiveProject(index);
     }
   };
 
@@ -99,7 +110,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick, da
     <group
       position={position}
       rotation={rotation}
-      onClick={onClick}
+      onClick={handleTileClick}
       onPointerOver={handlePointerOver}
       onPointerOut={() => !isMobile && isProjectSectionActive && setDesktopHovered(false)}>
       <group ref={projectRef}>
