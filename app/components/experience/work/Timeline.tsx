@@ -22,7 +22,6 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   }, [point.position]);
 
   const textAlign = point.position === 'left' ? 'right' : 'left';
-  const [titleHeight, setTitleHeight] = useState(0.6);
 
   const textProps: Partial<TextProps> = useMemo(() => ({
     font: "./Vercetti-Regular.woff",
@@ -35,18 +34,11 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
     ...textProps,
     font: "./soria-font.ttf",
     fontSize: 0.6,
-    maxWidth: 3,
+    // Wide enough that every timeline title fits on a single line (the widest,
+    // "Amity University", is ~3.56 units at this font size), so the subtitle
+    // can sit at a fixed offset below without ever overlapping.
+    maxWidth: 3.9,
   }), [textProps]);
-
-  // Measure the rendered title height so the subtitle always sits below it,
-  // even when a multi-word title wraps onto a second line.
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  const handleTitleSync = (troika: any) => {
-    const bounds = troika?.textRenderInfo?.blockBounds;
-    if (!bounds) return;
-    const height = bounds[3] - bounds[1];
-    setTitleHeight((prev) => (Math.abs(prev - height) > 0.01 ? height : prev));
-  };
 
   return (
     <group position={point.point} scale={isMobile ? 0.35 : 0.6}>
@@ -60,12 +52,12 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
             {point.year}
           </Text>
           <group position={[0, -0.5, 0]}>
-            <Text {...titleProps} anchorY="top" fontSize={0.6} maxWidth={3}
-              position={[0, -diff / 2, 0]} onSync={handleTitleSync}>
+            <Text {...titleProps} anchorY="top" fontSize={0.6} maxWidth={3.9}
+              position={[0, -diff / 2, 0]}>
               {point.title}
             </Text>
             <Text {...textProps} anchorY="top" fontSize={0.2}
-              position={[0, -diff / 2 - titleHeight - 0.14, 0]}>
+              position={[0, -diff / 2 - 0.8, 0]}>
               {point.subtitle}
             </Text>
           </group>
