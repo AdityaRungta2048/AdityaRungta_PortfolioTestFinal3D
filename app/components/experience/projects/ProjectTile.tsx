@@ -63,7 +63,8 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick, da
       .to((mesh as THREE.Mesh).material, { opacity: hovered ? 0.95 : 0.3 }, 0)
       .to(mesh.position, { y: hovered ? 1 : 0 }, 0);
 
-    if (project.url) {
+    // Reveal the "click to know more" hint alongside the description on hover.
+    if (button) {
       hoverAnimRef.current
         .to(button.scale, { y: hovered ? 1 : 0, x: hovered ? 1 : 0 }, 0)
         .to(button.position, { z: hovered ? 0.3 : -1 }, 0);
@@ -80,27 +81,28 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick, da
     }
   }, [isProjectSectionActive]);
 
-  const handleClick = (e: ThreeEvent<MouseEvent>) => {
-    e.stopPropagation();
-    if (!project.url) return;
-    const button = e.eventObject;
-    gsap.to(button.position, { z: 0, duration: 0.1 })
-      .then(() => gsap.to(button.position, { z: 0.3, duration: 0.3 }));
-    setTimeout(() => window.open(project.url, '_blank'), 50);
-  };
-
   const handlePointerOver = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     if (!isMobile && isProjectSectionActive) {
+      // Hovering only previews the tile (description + "click to know more"
+      // hint). The detail panel opens on click.
       setDesktopHovered(true);
-      // Open the detail panel for this project on hover.
-      setActiveProject(index);
     }
   };
 
   const handleTileClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     onClick();
+    // Desktop: a click anywhere on the tile opens the detail panel.
+    // Mobile: the first tap selects the tile (revealing the hint) and the
+    // hint button below opens the panel.
+    if (!isMobile && isProjectSectionActive) {
+      setActiveProject(index);
+    }
+  };
+
+  const handleOpenPanel = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
     if (isProjectSectionActive) {
       setActiveProject(index);
     }
@@ -150,27 +152,27 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick, da
           fontSize={0.2}>
           {project.subtext}
         </Text>
-        {project.url && (
-          <group
-            position={[1.3, -0.6, -1]}
-            scale={[0, 0, 1]}
-            onClick={handleClick}
-            onPointerOver={() => document.body.style.cursor = 'pointer'}
-            onPointerOut={() => document.body.style.cursor = 'auto'}>
-            <mesh>
-              <boxGeometry args={[1.1, 0.4, 0.2]} />
-              <meshBasicMaterial color="#222" />
-              <Edges color="white" lineWidth={1} />
-            </mesh>
-            <Text
-              {...subtitleProps}
-              color="white"
-              position={[-0.4, 0.15, 0.2]}
-              fontSize={0.25}>
-              VIEW ↗
-            </Text>
-          </group>
-        )}
+        <group
+          position={[0, -0.72, -1]}
+          scale={[0, 0, 1]}
+          onClick={handleOpenPanel}
+          onPointerOver={() => document.body.style.cursor = 'pointer'}
+          onPointerOut={() => document.body.style.cursor = 'auto'}>
+          <mesh>
+            <planeGeometry args={[2.9, 0.5, 1]} />
+            <meshBasicMaterial color="#111" transparent opacity={0.9} />
+            <Edges color="#111" lineWidth={1} />
+          </mesh>
+          <Text
+            {...subtitleProps}
+            color="white"
+            anchorX="center"
+            anchorY="middle"
+            position={[0, 0, 0.02]}
+            fontSize={0.22}>
+            CLICK TO KNOW MORE ↗
+          </Text>
+        </group>
       </group>
     </group>
   );
