@@ -22,6 +22,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick, da
   const projectRef = useRef<THREE.Group>(null);
   const hoverAnimRef = useRef<gsap.core.Timeline | null>(null);
   const [desktopHovered, setDesktopHovered] = useState(false);
+  const [descHeight, setDescHeight] = useState(0.9);
   const isProjectSectionActive = usePortalStore((state) => state.activePortalId === "projects");
   const setActiveProject = useProjectStore((state) => state.setActiveProject);
   const hovered = isMobile ? activeId === index : desktopHovered;
@@ -38,6 +39,17 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick, da
     anchorX: "left",
     anchorY: "top",
   }), []);
+
+  // Measure the teaser height so the "click to know more" hint always sits
+  // just below the text instead of covering it.
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  const handleDescSync = (troika: any) => {
+    const bounds = troika?.textRenderInfo?.blockBounds;
+    if (!bounds) return;
+    const height = bounds[3] - bounds[1];
+    setDescHeight((prev) => (Math.abs(prev - height) > 0.01 ? height : prev));
+  };
+  const hintY = Math.max(0.25 - descHeight, -0.7);
 
   useEffect(() => {
     if (!projectRef.current) return;
@@ -148,12 +160,12 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick, da
           {...subtitleProps}
           maxWidth={3.8}
           position={[-1.9, 2.3, 0.1]}
-          // scale={[0, 0, 1]}
-          fontSize={0.2}>
-          {project.subtext}
+          fontSize={0.2}
+          onSync={handleDescSync}>
+          {project.tagline ?? project.subtext}
         </Text>
         <group
-          position={[0, -0.72, -1]}
+          position={[0, hintY, -1]}
           scale={[0, 0, 1]}
           onClick={handleOpenPanel}
           onPointerOver={() => document.body.style.cursor = 'pointer'}
