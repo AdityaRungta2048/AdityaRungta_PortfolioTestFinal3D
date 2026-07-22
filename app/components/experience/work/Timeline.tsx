@@ -33,12 +33,20 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   const titleProps = useMemo(() => ({
     ...textProps,
     font: "./soria-font.ttf",
-    fontSize: 0.6,
+    fontSize: 0.5,
     // Wide enough that every timeline title fits on a single line (the widest,
-    // "Amity University", is ~3.56 units at this font size), so the subtitle
+    // "Amity University", is ~2.97 units at this font size), so the subtitle
     // can sit at a fixed offset below without ever overlapping.
-    maxWidth: 3.9,
+    maxWidth: 3.4,
   }), [textProps]);
+
+  // Draw the labels on top of the 3D models so they are never hidden behind
+  // (or faded into) the melting-clock scenery.
+  const onTop = {
+    renderOrder: 4,
+    'material-depthTest': false,
+    'material-depthWrite': false,
+  };
 
   return (
     <group position={point.point} scale={isMobile ? 0.35 : 0.6}>
@@ -48,16 +56,16 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
       </Box>
       <group>
         <group position={getPoint}>
-          <Text {...textProps} fontSize={0.3} position={[-diff / 2, 0, 0]}>
+          <Text {...textProps} {...onTop} fontSize={0.3} position={[-diff / 2, 0, 0]}>
             {point.year}
           </Text>
           <group position={[0, -0.5, 0]}>
-            <Text {...titleProps} anchorY="top" fontSize={0.6} maxWidth={3.9}
+            <Text {...titleProps} {...onTop} anchorY="top" fontSize={0.5} maxWidth={3.4}
               position={[0, -diff / 2, 0]}>
               {point.title}
             </Text>
-            <Text {...textProps} anchorY="top" fontSize={0.2}
-              position={[0, -diff / 2 - 0.8, 0]}>
+            <Text {...textProps} {...onTop} anchorY="top" fontSize={0.2}
+              position={[0, -diff / 2 - 0.65, 0]}>
               {point.subtitle}
             </Text>
           </group>
